@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum Role {
+  REQUESTER
+  DONOR
+  ADMIN
+}
+enum AccountStatus {
+  ACTIVE
+  PAUSED
+  DELETED
+}
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+enum AvailabilityStatus {
+  AVAILABLE
+  PAUSED
+  UNKNOWN
+}
+enum RequestStatus {
+  DRAFT
+  OPEN
+  NOTIFYING
+  RESPONSES_RECEIVED
+  COORDINATING
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+enum Urgency {
+  IMMEDIATE
+  WITHIN_24_HOURS
+  WITHIN_3_DAYS
+}
+model User {
+  id String @id @default(cuid())
+  name String
+  phone String @unique
+  role Role @default(REQUESTER)
+  accountStatus AccountStatus @default(ACTIVE) @map("account_status")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  donorProfile DonorProfile?
+  requests BloodRequest[]
+  @@map("users")
+}
+model DonorProfile {
+  userId String @id @map("user_id")
+  bloodGroup String @map("blood_group")
+  approximateLocation Unsupported("geography(Point,4326)")? @map("approximate_location")
+  availability AvailabilityStatus @default(UNKNOWN) @map("availability_status")
+  lastDonationDate DateTime? @map("last_donation_date") @db.Date
+  verification VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  notificationConsent Boolean @default(false) @map("notification_consent")
+  verifiedAt DateTime? @map("verified_at")
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  matches DonorMatch[]
+  @@index([bloodGroup,availability,verification])
+  @@map("donor_profiles")
+}
+model BloodRequest {
+  id String @id @default(cuid())
+  requesterId String @map("requester_id")
+  bloodGroup String @map("blood_group")
+  component String
+  unitsRequested Int @map("units_requested")
+  hospitalId String? @map("hospital_id")
+  approximateLocation Unsupported("geography(Point,4326)")? @map("approximate_location")
+  urgency Urgency
+  status RequestStatus @default(DRAFT)
+  consentRecord Json @map("consent_record")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime? @map("expires_at")
+  requester User @relation(fields:[requesterId],references:[id])
+  matches DonorMatch[]
+  notifications NotificationLog[]
+  @@index([status,createdAt])
+  @@map("blood_requests")
+}
+model BloodBank {
+  id String @id @default(cuid())
+  name String
+  address String
+  location Unsupported("geography(Point,4326)")?
+  phone String?
+  verification VerificationStatus @default(UNVERIFIED) @map("verification_status")
+  source String
+  lastVerifiedAt DateTime? @map("last_verified_at")
+  inventory BloodBankInventory[]
+  @@map("blood_banks")
+}
+model BloodBankInventory {
+  id String @id @default(cuid())
+  bloodBankId String @map("blood_bank_id")
+  component String
+  bloodGroup String @map("blood_group")
+  unitsAvailable Int @map("units_available")
+  source String
+  lastUpdatedAt DateTime @map("last_updated_at")
+  bloodBank BloodBank @relation(fields:[bloodBankId],references:[id],onDelete:Cascade)
+  @@index([bloodBankId,bloodGroup,component,lastUpdatedAt])
+  @@map("blood_bank_inventory")
+}
+model DonorMatch {
+  id String @id @default(cuid())
+  requestId String @map("request_id")
+  donorId String @map("donor_id")
+  distanceKm Float? @map("distance_km")
+  matchReason String @map("match_reason")
+  responseStatus String @default("PENDING") @map("response_status")
+  createdAt DateTime @default(now()) @map("created_at")
+  request BloodRequest @relation(fields:[requestId],references:[id],onDelete:Cascade)
+  donor DonorProfile @relation(fields:[donorId],references:[userId],onDelete:Cascade)
+  @@unique([requestId,donorId])
+  @@index([requestId,responseStatus])
+  @@map("donor_matches")
+}
+model NotificationLog {
+  id String @id @default(cuid())
+  requestId String @map("request_id")
+  donorId String @map("donor_id")
+  channel String
+  deliveryStatus String @map("delivery_status")
+  providerMessageId String? @map("provider_message_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  request BloodRequest @relation(fields:[requestId],references:[id],onDelete:Cascade)
+  @@unique([requestId,donorId,channel])
+  @@map("notification_logs")
+}
+model ConsentRecord {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  subject String
+  version String
+  granted Boolean
+  recordedAt DateTime @default(now()) @map("recorded_at")
+  @@index([userId,subject,recordedAt])
+  @@map("consent_records")
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String @map("actor_id")
+  action String
+  entityType String @map("entity_type")
+  entityId String @map("entity_id")
+  metadata Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  @@index([actorId,createdAt])
+  @@map("audit_logs")
+}

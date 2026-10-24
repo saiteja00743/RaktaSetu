@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: raktkhoj
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: ["raktkhoj_data:/var/lib/postgresql/data"]
+volumes:
+  raktkhoj_data:
