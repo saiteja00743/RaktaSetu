@@ -3,7 +3,36 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {"dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"", "dev:web": "vite --host 0.0.0.0", "dev:api": "tsx watch server/index.ts", "build": "tsc -b && vite build", "start": "tsx server/index.ts"},
-  "dependencies": {"react":"^19.1.0", "react-dom":"^19.1.0", "react-router-dom":"^6.30.1", "lucide-react":"^0.468.0", "express":"^5.1.0", "cors":"^2.8.5", "zod":"^3.24.4", "@prisma/client":"^6.8.2", "dotenv":"^16.4.7"},
-  "devDependencies": {"@vitejs/plugin-react":"^4.4.1", "vite":"^6.3.5", "typescript":"^5.8.3", "tsx":"^4.19.4", "concurrently":"^9.1.2", "prisma":"^6.8.2", "@types/express":"^5.0.1", "@types/cors":"^2.8.17", "@types/react":"^19.1.2", "@types/react-dom":"^19.1.2", "@types/node":"^22.15.3"}
+  "scripts": {
+    "dev": "concurrently -k \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:web": "vite --host 0.0.0.0",
+    "dev:api": "tsx watch server/index.ts",
+    "build": "tsc -b && vite build",
+    "start": "tsx server/index.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.30.1",
+    "twilio": "^6.2.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.2",
+    "prisma": "^6.8.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
 }
